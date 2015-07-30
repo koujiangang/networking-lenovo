@@ -19,7 +19,7 @@ import sqlalchemy.orm.exc as sa_exc
 
 import neutron.db.api as db
 from networking_lenovo.ml2 import exceptions as c_exc
-from networking_lenovo.ml2 import nos_models_v2
+from neutron.plugins.ml2.drivers.lenovo import nos_models_v2
 
 
 LOG = logging.getLogger(__name__)
