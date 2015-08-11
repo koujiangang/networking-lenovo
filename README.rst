@@ -19,7 +19,14 @@ This new access layer can be typically created via many mechanisms e.g. Linux Br
 
 .. image:: http://s6.postimg.org/3r7rsk19d/lenovo_openstack_driver.gif
 
-Network Layout
+User Guide
 --------
+
+The Lenovo Networking User Guide is provided to assist with installation and setup of this plugin 
+
+
+
+
+
 
 * TODO
