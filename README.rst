@@ -22,7 +22,8 @@ This new access layer can be typically created via many mechanisms e.g. Linux Br
 User Guide
 --------
 
-The Lenovo Networking User Guide is provided to assist with installation and setup of this plugin 
+The Lenovo Networking User Guide is provided to assist with installation and setup of this plugin - https://github.com/lenovo-network/networking-lenovo/blob/master/requirements.txt
+
 
 
 
