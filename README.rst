@@ -24,7 +24,7 @@ User Guide
 
 * The Lenovo Networking User Guide is provided to assist with installation and setup of this plugin -  `User Guide`_. 
 
-. _User Guide: http://s000.tinyupload.com/index.php?file_id=78198809758653746047
+. _`User Guide`: http://s000.tinyupload.com/index.php?file_id=78198809758653746047/
 
 
 
