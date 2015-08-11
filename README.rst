@@ -1,5 +1,6 @@
+
 ===============================
-networking-lenovo
+<b>Lenovo Networking Plugin for Openstack Neutron</b>
 ===============================
 
 Networking Lenovo contains the Lenovo vendor code for Openstack Neutron
