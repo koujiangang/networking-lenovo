@@ -24,7 +24,7 @@ User Guide
 
 The Lenovo Networking Openstack User Guide is provided to assist with installation and setup of this plugin here  `Download User Guide`_. 
 
-.. _Download User Guide: http://s000.tinyupload.com/index.php?file_id=78198809758653746047/
+.. _Download User Guide: http://s000.tinyupload.com/index.php?file_id=71513600932467673425/
 
 
 
