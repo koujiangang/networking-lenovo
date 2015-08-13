@@ -20,7 +20,7 @@ This new access layer can be typically created via many mechanisms e.g. Linux Br
 User Guide
 --------
 
-The Lenovo Networking Openstack User Guide is provided to assist with installation and setup of this plugin here  `Download User Guide`_. 
+The Lenovo Networking Neutron ML2 User Guide is provided to assist with installation and setup of this driver -  `Download User Guide`_. 
 
 .. _Download User Guide: https://www.dropbox.com/s/ctfd8mxud4r84cj/Openstack_Neutron_Plugin_UG.pdf?dl=0/
 
