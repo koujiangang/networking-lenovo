@@ -6,8 +6,6 @@ Lenovo Networking Plugin for Openstack Neutron
 Networking Lenovo contains the Lenovo vendor code for Openstack Neutron
 
 * Free software: Apache license
-* Documentation: http://docs.openstack.org/developer/networking-lenovo
-* Source: http://git.openstack.org/cgit/stackforge/networking-lenovo
 * Bugs: http://bugs.launchpad.net/networking-lenovo
 
 Overview
@@ -24,9 +22,8 @@ User Guide
 
 The Lenovo Networking Openstack User Guide is provided to assist with installation and setup of this plugin here  `Download User Guide`_. 
 
-.. _Download User Guide: http://s000.tinyupload.com/index.php?file_id=71513600932467673425/
+.. _Download User Guide: https://www.dropbox.com/s/ctfd8mxud4r84cj/Openstack_Neutron_Plugin_UG.pdf?dl=0/
 
 
-
-* TODO
+More details can found on Lenovo Openstack Wiki page: https://wiki.openstack.org/wiki/Neutron/ML2/LenovoML2Mechanism
 
