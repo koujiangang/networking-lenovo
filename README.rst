@@ -22,7 +22,7 @@ User Guide
 
 The Lenovo Networking Neutron ML2 User Guide is provided to assist with installation and setup of this driver -  `Download User Guide`_. 
 
-.. _Download User Guide: https://www.dropbox.com/s/ctfd8mxud4r84cj/Openstack_Neutron_Plugin_UG.pdf?dl=0/
+.. _Download User Guide: http://publib.boulder.ibm.com/infocenter/systemx/documentation/topic/com.lenovo.switchmgt.openstack_neutron_plugin.doc/openstack_neutron_plugin.html
 
 ML2 Driver Details 
 -------
