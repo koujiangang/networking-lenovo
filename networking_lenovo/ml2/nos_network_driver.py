@@ -65,11 +65,10 @@ class LenovoNOSDriver(object):
         """
         if not allowed_exc_strs:
             allowed_exc_strs = []
-        mgr = self.nxos_connect(nos_host)
+        mgr = self.nos_connect(nos_host)
         try:
             mgr.edit_config(target=target, config=config, format='text')
         except Exception as e:
-	    pdb.set_trace()
             for exc_str in allowed_exc_strs:
                 if exc_str in str(e):
                     break
@@ -78,7 +77,7 @@ class LenovoNOSDriver(object):
                 # the original ncclient exception.
                 raise cexc.NOSConfigFailed(config=config, exc=e)
 
-    def nxos_connect(self, nos_host):
+    def nos_connect(self, nos_host):
         """Make SSH connection to the NOS Switch."""
         if getattr(self.connections.get(nos_host), 'connected', None):
             return self.connections[nos_host]
@@ -128,7 +127,6 @@ class LenovoNOSDriver(object):
             LOG.debug(_("NOSDriver: %s"), confstr)
             self._edit_config(nos_host, target='running', config=confstr)
 	except cexc.NOSConfigFailed:
-	    pdb.set_trace()
 	    with excutils.save_and_reraise_exception():
                 self.delete_vlan(nos_host, vlanid)
 		
@@ -141,7 +139,6 @@ class LenovoNOSDriver(object):
             confstr = self.create_xml_snippet(snipp.CMD_VLAN_NO_SHUTDOWN_SNIPPET % vlanid)
             self._edit_config( nos_host, target='running', config=confstr)
         except cexc.NOSConfigFailed:
-            pdb.set_trace()
             with excutils.save_and_reraise_exception():
                 self.delete_vlan(nos_host, vlanid)
 

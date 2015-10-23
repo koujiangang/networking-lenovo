@@ -49,6 +49,11 @@ class NOSConfigFailed(exceptions.NeutronException):
     message = _("Failed to configure NOS: %(config)s. Reason: %(exc)s.")
 
 
+class NOSSNMPFailure(exceptions.NeutronException):
+    """Failed to configure NOS switch via SNMP."""
+    message = ("SNMP operation '%(operation)s' to '%(nos_host)s' failed: %(error)s")
+
+
 class NOSPortBindingNotFound(exceptions.NeutronException):
     """NOSPort Binding is not present."""
     message = _("NOS Port Binding (%(filters)s) is not present")
