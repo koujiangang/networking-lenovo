@@ -66,6 +66,10 @@ SKEETER_SYSDESCR = "G8124-E"
 SCOOTER_SYSDESCR = "G8124"
 KARKINOS_SYSDESCR = "G7028"
 EARTH_SYSDESCR = "G7052"
+JUPITER_SYSDESCR = "G8296"
+PIGLET_SYSDESCR = "G8052"
+KRAKEN_SYSDESCR = "G8332"
+MARS_SYSDESCR = "G8272"
 
 gryphonfc_oid = {
     'device':                 "GryphonFC",
@@ -223,6 +227,59 @@ earth_oid = {
     'agApplyConfiguration':   (20301, 2, 7, 18, 1, 1, 1, 2, 0),
 } 
 
+jupiter_oid = {
+    'device':                 "Jupiter",
+    'vlanNewCfgState':        (19046, 2, 7, 22, 2, 1, 1, 3, 1, 4),
+    'vlanNewCfgVlanName':     (19046, 2, 7, 22, 2, 1, 1, 3, 1, 2),
+    'vlanNewCfgDelete':       (19046, 2, 7, 22, 2, 1, 1, 3, 1, 7),
+    'vlanNewCfgAddPort':      (19046, 2, 7, 22, 2, 1, 1, 3, 1, 5),
+    'vlanNewCfgRemovePort':   (19046, 2, 7, 22, 2, 1, 1, 3, 1, 6),
+    'agPortNewCfgVlanTag':    (19046, 2, 7, 22, 1, 1, 2, 3, 1, 3),
+    'agPortNewCfgPVID':       (19046, 2, 7, 22, 1, 1, 2, 3, 1, 6),
+    'trunkGroupInfoPorts':    (19046, 2, 7, 22, 2, 3, 9, 1, 1, 3),
+    'agApplyConfiguration':   (19046, 2, 7, 22, 1, 1, 1, 2, 0),
+}
+
+piglet_oid = {
+    'device':                 "Piglet",
+    'vlanNewCfgState':        (26543, 2, 7, 7, 2, 1, 1, 3, 1, 4),
+    'vlanNewCfgVlanName':     (26543, 2, 7, 7, 2, 1, 1, 3, 1, 2),
+    'vlanNewCfgDelete':       (26543, 2, 7, 7, 2, 1, 1, 3, 1, 7),
+    'vlanNewCfgAddPort':      (26543, 2, 7, 7, 2, 1, 1, 3, 1, 5),
+    'vlanNewCfgRemovePort':   (26543, 2, 7, 7, 2, 1, 1, 3, 1, 6),
+    'agPortNewCfgVlanTag':    (26543, 2, 7, 7, 1, 1, 2, 3, 1, 3),
+    'agPortNewCfgPVID':       (26543, 2, 7, 7, 1, 1, 2, 3, 1, 6),
+    'trunkGroupInfoPorts':    (26543, 2, 7, 7, 2, 3, 9, 1, 1, 3),
+    'agApplyConfiguration':   (26543, 2, 7, 7, 1, 1, 1, 2, 0),
+}
+
+kraken_oid = {
+    'device':                 "Kraken",
+    'vlanNewCfgState':        (20301, 2, 7, 16, 2, 1, 1, 3, 1, 4),
+    'vlanNewCfgVlanName':     (20301, 2, 7, 16, 2, 1, 1, 3, 1, 2),
+    'vlanNewCfgDelete':       (20301, 2, 7, 16, 2, 1, 1, 3, 1, 7),
+    'vlanNewCfgAddPort':      (20301, 2, 7, 16, 2, 1, 1, 3, 1, 5),
+    'vlanNewCfgRemovePort':   (20301, 2, 7, 16, 2, 1, 1, 3, 1, 6),
+    'agPortNewCfgVlanTag':    (20301, 2, 7, 16, 1, 1, 2, 3, 1, 3),
+    'agPortNewCfgPVID':       (20301, 2, 7, 16, 1, 1, 2, 3, 1, 6),
+    'trunkGroupInfoPorts':    (20301, 2, 7, 16, 2, 3, 9, 1, 1, 3),
+    'agApplyConfiguration':   (20301, 2, 7, 16, 1, 1, 1, 2, 0),
+
+}
+
+mars_oid = {
+    'device':                 "Mars",
+    'vlanNewCfgState':        (19046, 2, 7, 24, 2, 1, 1, 3, 1, 4),
+    'vlanNewCfgVlanName':     (19046, 2, 7, 24, 2, 1, 1, 3, 1, 2),
+    'vlanNewCfgDelete':       (19046, 2, 7, 24, 2, 1, 1, 3, 1, 7),
+    'vlanNewCfgAddPort':      (19046, 2, 7, 24, 2, 1, 1, 3, 1, 5),
+    'vlanNewCfgRemovePort':   (19046, 2, 7, 24, 2, 1, 1, 3, 1, 6),
+    'agPortNewCfgVlanTag':    (19046, 2, 7, 24, 1, 1, 2, 3, 1, 3),
+    'agPortNewCfgPVID':       (19046, 2, 7, 24, 1, 1, 2, 3, 1, 6),
+    'trunkGroupInfoPorts':    (19046, 2, 7, 24, 2, 3, 9, 1, 1, 3),
+    'agApplyConfiguration':   (19046, 2, 7, 24, 1, 1, 1, 2, 0),
+}
+
 class LenovoNOSDriverSNMP(object):
     """NOS SNMP Driver Main Class."""
     def __init__(self):
@@ -371,6 +428,22 @@ class LenovoNOSDriverSNMP(object):
                 LOG.debug(_("this is a Earth"))
                 self.nos_oid_table[nos_host] = earth_oid
                 return earth_oid
+            elif sys_descr.find(JUPITER_SYSDESCR) != -1:
+                LOG.debug(_("this is a Jupiter"))
+                self.nos_oid_table[nos_host] = jupiter_oid
+                return jupiter_oid
+            elif sys_descr.find(PIGLET_SYSDESCR) != -1:
+                LOG.debug(_("this is a Piglet"))
+                self.nos_oid_table[nos_host] = piglet_oid
+                return piglet_oid
+            elif sys_descr.find(KRAKEN_SYSDESCR) != -1:
+                LOG.debug(_("this is a Kraken"))
+                self.nos_oid_table[nos_host] = kraken_oid
+                return kraken_oid
+            elif sys_descr.find(MARS_SYSDESCR) != -1:
+                LOG.debug(_("this is a Mars"))
+                self.nos_oid_table[nos_host] = mars_oid
+                return mars_oid
             else:
                 LOG.debug(_("unsupported device!"))
                 raise cexc.NOSSNMPFailure(operation='DEVICE', error='Unsupported Device!')
