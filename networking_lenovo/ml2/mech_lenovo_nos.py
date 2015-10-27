@@ -16,7 +16,6 @@
 """
 ML2 Mechanism Driver for Lenovo NOS platforms.
 """
-import pdb
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -29,7 +28,6 @@ from networking_lenovo.ml2 import config as conf
 from networking_lenovo.ml2 import exceptions as excep
 from networking_lenovo.ml2 import nos_db_v2 as nxos_db
 from networking_lenovo.ml2 import nos_network_driver
-from networking_lenovo.ml2 import nos_network_driver_snmp
 
 LOG = logging.getLogger(__name__)
 
@@ -46,8 +44,7 @@ class LenovoNOSMechanismDriver(api.MechanismDriver):
         self._nos_switches = conf.ML2MechLenovoConfig.nos_dict
         LOG.debug(_("nos_switches found = %s"), self._nos_switches)
 
-        #self.driver = nos_network_driver.LenovoNOSDriver()
-        self.driver = nos_network_driver_snmp.LenovoNOSDriverSNMP()
+        self.driver = nos_network_driver.LenovoNOSDriver()
 
     def _valid_network_segment(self, segment):
         return (cfg.CONF.ml2_lenovo.managed_physical_network is None or

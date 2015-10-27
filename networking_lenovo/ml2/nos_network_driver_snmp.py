@@ -463,9 +463,9 @@ class LenovoNOSDriverSNMP(object):
 
 
     #create VLAN
-    def create_vlan(self, nos_host, vlan_id, vlan_name):
+    def _create_vlan(self, nos_host, vlan_id, vlan_name):
         """Create a VLAN on NOS Switch given the VLAN ID and Name."""
-        LOG.debug(_('create_vlan %s %d'), nos_host, vlan_id) 
+        LOG.debug(_('_create_vlan %s %d'), nos_host, vlan_id) 
         oid_table = self._get_oid_table(nos_host)
 
         varBinds = []
@@ -642,6 +642,6 @@ class LenovoNOSDriverSNMP(object):
 
     def create_and_trunk_vlan(self, nos_host, vlan_id, vlan_name, intf_type, interface):
         LOG.debug(_('create_and_trunk_vlan %s %d %s'), nos_host, vlan_id, interface)
-        self.create_vlan(nos_host, vlan_id, vlan_name)
+        self._create_vlan(nos_host, vlan_id, vlan_name)
         if interface:
             self.enable_vlan_on_trunk_int(nos_host, vlan_id, intf_type, interface)
