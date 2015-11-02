@@ -394,7 +394,7 @@ class LenovoNOSDriverSNMP(object):
                 return gryphon_oid
             elif sys_descr.find(COMPASSR_SYSDESCR) != -1:
                 LOG.debug(_("this is a CompassR"))
-                self.nos_oid_table[nos_host] = compasr_oid
+                self.nos_oid_table[nos_host] = compassr_oid
                 return compassr_oid
             elif sys_descr.find(COMPASS_SYSDESCR) != -1:
                 LOG.debug(_("this is a Compass"))
