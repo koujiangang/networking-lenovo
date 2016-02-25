@@ -1,0 +1,70 @@
+# Lenovo Switch parameters
+10.240.10.1:
+  protocol: 
+    NETCONF:
+      SSH_Port: 830
+      SSH_User: user1
+      SSH_Password: passw0rd
+    SNMP:
+      SNMP_Port: 161
+      SNMP_Ver: 3
+      SNMP_User: adminmd5
+      SNMP_Community: private
+      SNMP_Authkey: key1
+      SNMP_Privkey: key2
+      SNMP_Auth: MD5
+      SNMP_Priv: DES
+  links:
+    compute01:
+      portType: single
+      portNumber: 10
+    compute02:
+      portType: portchannel
+      portNumber: 64
+
+
+
+10.240.30.11:
+  protocol: 
+    NETCONF:
+      SSH_Port: 830
+      SSH_User: sysadmin
+      SSH_Password: passw0rd
+  links:
+    nova-compute-10:
+      portType: single
+      portNumber: 10
+    nova-compute-11:
+      portType: portchannel
+      portNumber: 64
+    nova-compute-12:
+      portType: single
+      portNumber: 10
+    nova-compute-13:
+      portType: portchannel
+      portNumber: 32
+
+10.240.30.25:
+  protocol: 
+    SNMP:
+      SNMP_Port: 161
+      SNMP_Ver: 3
+      SNMP_User: adminmd5
+      SNMP_Community: private
+      SNMP_Authkey: key1
+      SNMP_Privkey: key2
+      SNMP_Auth: MD5
+      SNMP_Priv: DES
+  links:
+    nova-compute-10:
+      portType: single
+      portNumber: 10
+    nova-compute-11:
+      portType: portchannel
+      portNumber: 64
+    nova-compute-12:
+      portType: single
+      portNumber: 10
+    nova-compute-13:
+      portType: portchannel
+      portNumber: 32
