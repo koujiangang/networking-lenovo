@@ -25,6 +25,7 @@ from networking_lenovo.ml2 import nos_db_v2
 from networking_lenovo.ml2 import nos_snippets as snipp
 from networking_lenovo.ml2 import nos_network_driver_netconf
 from networking_lenovo.ml2 import nos_network_driver_snmp
+from networking_lenovo.ml2 import nos_network_driver_sshnosx
 
 LOG = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class LenovoNOSDriver(object):
         self.nos_switches = conf.ML2MechLenovoConfig.nos_dict
         self.netconf = nos_network_driver_netconf.LenovoNOSDriverNetconf()
         self.snmp = nos_network_driver_snmp.LenovoNOSDriverSNMP()
+        self.sshnosx = nos_network_driver_sshnosx.LenovoNOSDriverSSHNosx()
 
 
     def _is_snmp(self, nos_host):
@@ -41,11 +43,19 @@ class LenovoNOSDriver(object):
         else:
             return (self.nos_switches[nos_host, 'protocol']).lower() == 'snmp'
 
+    def _is_sshnosx(self, nos_host):
+        if (nos_host, 'protocol') not in self.nos_switches:
+            return False
+        else:
+            return (self.nos_switches[nos_host, 'protocol']).lower() == 'sshnosx'
+
 
     def delete_vlan(self, nos_host, vlan_id):
         func = None
         if (self._is_snmp(nos_host)):
             func = self.snmp.delete_vlan
+        elif (self._is_sshnosx(nos_host)):
+            func = self.sshnosx.delete_vlan
         else:
             func = self.netconf.delete_vlan
 
@@ -56,6 +66,8 @@ class LenovoNOSDriver(object):
         func = None
         if (self._is_snmp(nos_host)):
             func = self.snmp.enable_vlan_on_trunk_int
+        elif (self._is_sshnosx(nos_host)):
+            func = self.sshnosx.enable_vlan_on_trunk_int
         else:
             func = self.netconf.enable_vlan_on_trunk_int
 
@@ -66,6 +78,8 @@ class LenovoNOSDriver(object):
         func = None
         if (self._is_snmp(nos_host)):
             func = self.snmp.disable_vlan_on_trunk_int
+        elif (self._is_sshnosx(nos_host)):
+            func = self.sshnosx.disable_vlan_on_trunk_int
         else:
             func = self.netconf.disable_vlan_on_trunk_int
 
@@ -76,6 +90,8 @@ class LenovoNOSDriver(object):
         func = None
         if (self._is_snmp(nos_host)):
             func = self.snmp.create_and_trunk_vlan
+        elif (self._is_sshnosx(nos_host)):
+            func = self.sshnosx.create_and_trunk_vlan
         else:
             func = self.netconf.create_and_trunk_vlan
 
