@@ -25,7 +25,7 @@ from networking_lenovo.ml2 import nos_db_v2
 from networking_lenovo.ml2 import nos_snippets as snipp
 from networking_lenovo.ml2 import nos_network_driver_netconf
 from networking_lenovo.ml2 import nos_network_driver_snmp
-from networking_lenovo.ml2 import nos_network_driver_sshnosx
+from networking_lenovo.ml2 import cnos_network_driver_ssh
 
 LOG = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class LenovoNOSDriver(object):
         self.nos_switches = conf.ML2MechLenovoConfig.nos_dict
         self.netconf = nos_network_driver_netconf.LenovoNOSDriverNetconf()
         self.snmp = nos_network_driver_snmp.LenovoNOSDriverSNMP()
-        self.cnos_ssh = nos_network_driver_sshnosx.LenovoCNOSDriverSSH()
+        self.cnos_ssh = cnos_network_driver_ssh.LenovoCNOSDriverSSH()
 
 
     def _is_snmp(self, nos_host):
