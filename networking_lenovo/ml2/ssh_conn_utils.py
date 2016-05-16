@@ -12,21 +12,6 @@ import paramiko
 import six
 import time
 
-class MihaiLog(object):
-    def __init__(self):
-        self.filename = "/home/openstack/logs/lenovo_ml2.log"
-
-    def btrace(self):
-        logfile = open(self.filename, "a")
-        traceback.print_stack(file=logfile)
-        logfile.close()
-
-    def log(self, msg):
-        logfile = open(self.filename, "a")
-        logfile.write(str(msg))
-        logfile.close()
-
-mihailog = MihaiLog()
 LOG = logging.getLogger(__name__)
 
 class LenovoSSHPool(pools.Pool):
@@ -136,18 +121,13 @@ class LenovoSSH(object):
             channel = ssh.invoke_shell()
             output = str()
 
-            mihailog.log("\n\n---------------------------------------------")
             cmd_list = cmds_str.split("\n")
             for cmd_line in cmd_list:
                 cmd = cmd_line.strip()
                 if cmd:
-                    mihailog.log("cmd_item: " + cmd + "\n")
                     output += self._exec_cmd(channel, cmd)
 
             channel.close()
-
-            mihailog.log("_exec_cfg_debug() stdout: " + output + "\n")
-            mihailog.log("---------------------------------------------")
 
 
     def exec_cfg_session(self, cmd):
@@ -163,7 +143,6 @@ class LenovoSSH(object):
                                              max_size=5)
 
         LOG.debug("exec_cfg_session(): command " + cmd)
-        mihailog.log("exec_cfg_session(): command " + cmd + "\n")
 
         try:
             with self.sshpool.item() as ssh:
