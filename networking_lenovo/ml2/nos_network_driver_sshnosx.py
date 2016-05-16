@@ -29,10 +29,10 @@ from networking_lenovo.ml2 import nos_db_v2
 from networking_lenovo.ml2 import cnos_cli_snippets as snipp
 from networking_lenovo.ml2 import ssh_conn_utils
 
-LOG = logging.getLogger("MIHAI " + __name__)
+LOG = logging.getLogger(__name__)
 
 
-class LenovoNOSDriverSSHNosx(object):
+class LenovoCNOSDriverSSH(object):
     """NOS Driver Main Class."""
     def __init__(self):
         self.nos_switches = conf.ML2MechLenovoConfig.nos_dict
@@ -110,11 +110,7 @@ class LenovoNOSDriverSSHNosx(object):
             cmd1 = snipp.CNOS_CLI_CMD_VLAN_CONF % (vlanid, vlanname)
             confstr = self._create_cfg_snippet(
                 snipp.CNOS_CLI_CMD_VLAN_CONF % (vlanid, vlanname))
-            LOG.warning("_create_vlan " + str(vlanid) + " " + str(vlanname) + " on host " + str(nos_host))
-            LOG.warning("CNOS_CLI_CMD_VLAN_CONF " + str(snipp.CNOS_CLI_CMD_VLAN_CONF))
-            LOG.warning("cmd1 " + str(cmd1))
-            LOG.warning("confstr: " + str(confstr))
-            LOG.debug(_("NOSDriver: %s"), confstr)
+            LOG.debug(_("CNOSDriver create_vlan: %s"), confstr)
 
             self._ssh_config(nos_host, confstr)
 #            self._edit_config(nos_host, target='running', config=confstr)
@@ -140,8 +136,7 @@ class LenovoNOSDriverSSHNosx(object):
         confstr = snipp.CNOS_CLI_CMD_NO_VLAN_CONF % vlanid
         confstr = self._create_cfg_snippet(confstr)
 
-        LOG.warning("delete_vlan " + str(vlanid) + " on host " + str(nos_host))
-        LOG.warning(confstr)
+        LOG.debug(_("CNOSDriver delete_vlan: %s"), confstr)
 
         self._ssh_config(nos_host, confstr)
 
@@ -162,8 +157,7 @@ class LenovoNOSDriverSSHNosx(object):
         confstr = snippet % (intf_type, interface, vlanid)
         confstr = self._create_cfg_snippet(confstr)
 
-        LOG.warning("enable_vlan_on_trunk_int " + str(vlanid) + " interface " + str(interface) + " type " + str(intf_type) + " on host " + str(nos_host))
-        LOG.debug(_("NOSDriver: %s"), confstr)
+        LOG.debug(_("NOSDriver enable_vlan: %s"), confstr)
 
         self._ssh_config(nos_host, confstr)
 #        self._edit_config(nos_host, target='running', config=confstr)
@@ -177,8 +171,8 @@ class LenovoNOSDriverSSHNosx(object):
         confstr = (snipp.CNOS_CLI_CMD_NO_VLAN_INT %
                    (intf_type, interface, vlanid))
         confstr = self._create_cfg_snippet(confstr)
-        LOG.warning("disable_vlan_on_trunk_int " + str(vlanid) + " interface " + str(interface) + " type " + str(intf_type) + " on host " + str(nos_host))
-        LOG.debug(_("NOSDriver: %s"), confstr)
+
+        LOG.debug(_("NOSDriver disable_vlan: %s"), confstr)
 
         self._ssh_config(nos_host, confstr)
 #        self._edit_config(nos_host, target='running', config=confstr)

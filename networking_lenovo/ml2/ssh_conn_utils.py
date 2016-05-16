@@ -10,15 +10,24 @@ from oslo_utils import excutils
 from oslo_utils import importutils
 import paramiko
 import six
-
-#from cinder import exception
-#from cinder.i18n import _, _LE, _LI, _LW
-#from cinder import ssh_utils
-#from cinder import utils
-
 import time
 
-LOG = logging.getLogger("MIHAI " + __name__)
+class MihaiLog(object):
+    def __init__(self):
+        self.filename = "/home/openstack/logs/lenovo_ml2.log"
+
+    def btrace(self):
+        logfile = open(self.filename, "a")
+        traceback.print_stack(file=logfile)
+        logfile.close()
+
+    def log(self, msg):
+        logfile = open(self.filename, "a")
+        logfile.write(str(msg))
+        logfile.close()
+
+mihailog = MihaiLog()
+LOG = logging.getLogger(__name__)
 
 class LenovoSSHPool(pools.Pool):
     """A simple eventlet pool to hold ssh connections."""
@@ -56,10 +65,10 @@ class LenovoSSHPool(pools.Pool):
             # the sockettimeout to None and setting a keepalive packet so that,
             # the server will keep the connection open. All that does is send
             # a keepalive packet every ssh_conn_timeout seconds.
-            if self.conn_timeout:
-                transport = ssh.get_transport()
-                transport.sock.settimeout(None)
-                transport.set_keepalive(self.conn_timeout)
+#            if self.conn_timeout:
+#                transport = ssh.get_transport()
+#                transport.sock.settimeout(None)
+#                transport.set_keepalive(self.conn_timeout)
             return ssh
         except Exception as e:
             msg = "Error connecting via ssh: %s" % six.text_type(e)
@@ -101,78 +110,49 @@ class LenovoSSH(object):
 
         self.sshpool = None
 
-    def run_ssh(self, cmd_list, check_exit_code=True):
-
-        command = ' \n '.join(cmd_list)
-
-        if not self.sshpool:
-            self.sshpool = LenovoSSHPool(self.switch_ip,
-                                             self.switch_port,
-                                             None,
-                                             self.switch_user,
-                                             self.switch_pwd,
-                                             min_size=1,
-                                             max_size=5)
-        try:
-            with self.sshpool.item() as ssh:
-                return processutils.ssh_execute(
-                    ssh,
-                    command,
-                    check_exit_code=check_exit_code)
-
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                LOG.warning("Error running SSH command: " + str(command))
-
-
-    def _exec_cfg_no_debug(self, ssh, cmd):
-            channel = ssh.invoke_shell()
-            channel.send(cmd)
-            channel.close()
-
     def _wait_for_prompt(self, ch):
         max_len = 9999
         output = str()
 
-        time.sleep(5)
         while True:
             if ch.recv_ready():
                 output += ch.recv(max_len)
-#                LOG.warning("Partial: " + output)
             else:
+                time.sleep(0.01)
+                continue
+
+            if "#" in output:
                 break
-#                ch.send("\n")
-#                continue
-            if output.endswith("#"):
-                break
-            if output.endswith(">"):
+            if ">" in output:
                 break
 
-        #LOG.warning(output)
         return output
 
-    def _exec_cfg_debug(self, ssh, cmd):
+    def _exec_cmd(self, ch, cmd):
+        ch.send(cmd + "\n")
+        return self._wait_for_prompt(ch)
+
+    def _exec_multi_cmds(self, ssh, cmds_str):
             channel = ssh.invoke_shell()
             output = str()
 
-            cmd_list = cmd.split("\n")
-            for cmd_item in cmd_list:
-                LOG.warning("cmd_item: " + cmd_item)
-                channel.send(cmd_item + "\n")
-                output += self._wait_for_prompt(channel)
-                channel.send("where\n")
-                output += self._wait_for_prompt(channel)
+            mihailog.log("\n\n---------------------------------------------")
+            cmd_list = cmds_str.split("\n")
+            for cmd_line in cmd_list:
+                cmd = cmd_line.strip()
+                if cmd:
+                    mihailog.log("cmd_item: " + cmd + "\n")
+                    output += self._exec_cmd(channel, cmd)
 
             channel.close()
 
-            LOG.warning("_exec_cfg_debug() stdout: " + output)
+            mihailog.log("_exec_cfg_debug() stdout: " + output + "\n")
+            mihailog.log("---------------------------------------------")
+
 
     def exec_cfg_session(self, cmd):
         """Execute cli configuration commands within a shell session
         """
-        if not cmd.endswith('\n'):
-            cmd += '\n'
-
         if not self.sshpool:
             self.sshpool = LenovoSSHPool(self.switch_ip,
                                              self.switch_port,
@@ -183,94 +163,13 @@ class LenovoSSH(object):
                                              max_size=5)
 
         LOG.debug("exec_cfg_session(): command " + cmd)
+        mihailog.log("exec_cfg_session(): command " + cmd + "\n")
 
         try:
             with self.sshpool.item() as ssh:
-                self._exec_cfg_debug(ssh, cmd)
+                self._exec_multi_cmds(ssh, cmd)
         except Exception:
             with excutils.save_and_reraise_exception():
                 LOG.exception("Error executing command via ssh.")
 
 
-
-
-    def ssh_execute(self, cmd_list, check_exit_code=True, attempts=1):
-        """Execute cli with status update.
-        Executes CLI commands where status return is expected.
-        cmd_list is a list of commands, where each command is itself
-        a list of parameters.  We use utils.check_ssh_injection to check each
-        command, but then join then with " ; " to form a single command.
-        """
-
-        # Check that each command is secure
-#        for cmd in cmd_list:
-#            self.utils.check_ssh_injection(cmd)
-
-        # Combine into a single command.
-#        command = ' \n '.join(map(lambda x: ' '.join(x), cmd_list))
-        command = '\n'.join(cmd_list)
-
-        if not self.sshpool:
-            self.sshpool = LenovoSSHPool(self.switch_ip,
-                                             self.switch_port,
-                                             None,
-                                             self.switch_user,
-                                             self.switch_pwd,
-                                             min_size=1,
-                                             max_size=5)
-        stdin, stdout, stderr = None, None, None
-        LOG.debug("Executing command via ssh: %s", command)
-        last_exception = None
-        try:
-            with self.sshpool.item() as ssh:
-                while attempts > 0:
-                    attempts -= 1
-                    try:
-                        LOG.warning("Execute ssh cmd: " + command + "\n\n\n")
-                        stdin, stdout, stderr = ssh.exec_command(command)
-                        LOG.debug("stdout: " + str(stdout.readlines()))
-                        LOG.debug("stderr: " + str(stderr.readlines()))
-                        channel = stdout.channel
-                        exit_status = channel.recv_exit_status()
-                        LOG.debug("Exit Status from ssh: %s", exit_status)
-                        # exit_status == -1 if no exit code was returned
-                        if exit_status != -1:
-                            LOG.debug('Result was %s', exit_status)
-                            if check_exit_code and exit_status != 0:
-                                raise processutils.ProcessExecutionError(
-                                    exit_code=exit_status,
-                                    stdout=stdout,
-                                    stderr=stderr,
-                                    cmd=command)
-                            else:
-                                return True
-                        else:
-                            return True
-                    except Exception as e:
-                        LOG.exception('Error executing SSH command.')
-                        last_exception = e
-                        greenthread.sleep(random.randint(20, 500) / 100.0)
-                LOG.debug("Handling error case after SSH: %s", last_exception)
-                try:
-                    raise processutils.ProcessExecutionError(
-                        exit_code=last_exception.exit_code,
-                        stdout=last_exception.stdout,
-                        stderr=last_exception.stderr,
-                        cmd=last_exception.cmd)
-                except AttributeError:
-                    raise processutils.ProcessExecutionError(
-                        exit_code=-1,
-                        stdout="",
-                        stderr="Error running SSH command",
-                        cmd=command)
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                LOG.exception("Error executing command via ssh.")
-        finally:
-            if stdin:
-                stdin.flush()
-                stdin.close()
-            if stdout:
-                stdout.close()
-            if stderr:
-                stderr.close()
