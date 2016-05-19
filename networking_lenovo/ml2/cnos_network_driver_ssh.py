@@ -94,11 +94,11 @@ class LenovoCNOSDriverSSH(object):
         """
 
         if intf_type == 'port':
-            cnos_word = ''
+            cnos_word = 'ethernet'
         elif intf_type == 'portchannel':
             cnos_word = 'port-aggregation'
         else:
-            Log.warning("Unknown interface type: " + intf_type)
+            LOG.warning("Unknown interface type: " + intf_type)
             cnos_word = intf_type
 
         return cnos_word
