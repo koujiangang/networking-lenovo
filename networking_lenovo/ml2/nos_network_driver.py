@@ -26,73 +26,79 @@ from networking_lenovo.ml2 import nos_snippets as snipp
 from networking_lenovo.ml2 import nos_network_driver_netconf
 from networking_lenovo.ml2 import nos_network_driver_snmp
 from networking_lenovo.ml2 import cnos_network_driver_ssh
+from networking_lenovo.ml2 import cnos_network_driver_rest
 
 LOG = logging.getLogger(__name__)
 
 class LenovoNOSDriver(object):
+    PROTO_SNMP = 'snmp'
+    PROTO_NETCONF = 'netconf'
+    PROTO_SSH = 'ssh'
+    PROTO_REST = 'rest'
+    OS_ENOS = 'enos'
+    OS_CNOS = 'cnos'
+
     def __init__(self):
         self.nos_switches = conf.ML2MechLenovoConfig.nos_dict
-        self.netconf = nos_network_driver_netconf.LenovoNOSDriverNetconf()
-        self.snmp = nos_network_driver_snmp.LenovoNOSDriverSNMP()
-        self.cnos_ssh = cnos_network_driver_ssh.LenovoCNOSDriverSSH()
+
+        self.drivers = {
+            (self.OS_ENOS, self.PROTO_SNMP) : 
+                  nos_network_driver_snmp.LenovoNOSDriverSNMP(),
+
+            (self.OS_ENOS, self.PROTO_NETCONF) : 
+                  nos_network_driver_netconf.LenovoNOSDriverNetconf(),
+
+            (self.OS_CNOS, self.PROTO_SSH) : 
+                  cnos_network_driver_ssh.LenovoCNOSDriverSSH(),
+
+            (self.OS_CNOS, self.PROTO_REST) : 
+                  cnos_network_driver_rest.LenovoCNOSDriverREST(),
+        }
 
 
-    def _is_snmp(self, nos_host):
-        if (nos_host, 'protocol') not in self.nos_switches:
-            return False
-        else:
-            return (self.nos_switches[nos_host, 'protocol']).lower() == 'snmp'
+    def _get_driver(self, host):
+        """ 
+        Obtains the instance of the class that actually implements
+        the functionality based of the configuration settings for
+        protocol(SNMP, REST API, SSH) and operating system (ENOS, CNOS)
+        """
 
-    def _is_cnos_ssh(self, nos_host):
-        if (nos_host, 'protocol') not in self.nos_switches:
-            return False
-        else:
-            return (self.nos_switches[nos_host, 'protocol']).lower() == 'cnos_ssh'
+        os = self.nos_switches.get((host, 'os'), self.OS_ENOS).lower()
+        protocol = self.nos_switches.get((host, 'protocol'), self.PROTO_NETCONF).lower()
 
+        #Backward compatibility hack
+        if protocol == 'cnos_ssh':
+            protocol = self.PROTO_SSH
+            os = self.OS_CNOS
+
+        try:
+            driver = self.drivers[(os, protocol)]
+        except KeyError:
+            msg = "Cannot find driver for protocol %s on %s" % (protocol, os)
+            raise Exception(msg)
+
+        return driver
+        
 
     def delete_vlan(self, nos_host, vlan_id):
-        func = None
-        if (self._is_snmp(nos_host)):
-            func = self.snmp.delete_vlan
-        elif (self._is_cnos_ssh(nos_host)):
-            func = self.cnos_ssh.delete_vlan
-        else:
-            func = self.netconf.delete_vlan
+        func = self._get_driver(nos_host).delete_vlan
 
         return func(nos_host, vlan_id)
 
 
     def enable_vlan_on_trunk_int(self, nos_host, vlan_id, intf_type, interface):
-        func = None
-        if (self._is_snmp(nos_host)):
-            func = self.snmp.enable_vlan_on_trunk_int
-        elif (self._is_cnos_ssh(nos_host)):
-            func = self.cnos_ssh.enable_vlan_on_trunk_int
-        else:
-            func = self.netconf.enable_vlan_on_trunk_int
+        func = self._get_driver(nos_host).enable_vlan_on_trunk_int
 
         return func(nos_host, vlan_id, intf_type, interface)
 
 
     def disable_vlan_on_trunk_int(self, nos_host, vlan_id, intf_type, interface):
-        func = None
-        if (self._is_snmp(nos_host)):
-            func = self.snmp.disable_vlan_on_trunk_int
-        elif (self._is_cnos_ssh(nos_host)):
-            func = self.cnos_ssh.disable_vlan_on_trunk_int
-        else:
-            func = self.netconf.disable_vlan_on_trunk_int
+        func = self._get_driver(nos_host).disable_vlan_on_trunk_int
 
         return func(nos_host, vlan_id, intf_type, interface)
 
 
     def create_and_trunk_vlan(self, nos_host, vlan_id, vlan_name, intf_type, nos_port):
-        func = None
-        if (self._is_snmp(nos_host)):
-            func = self.snmp.create_and_trunk_vlan
-        elif (self._is_cnos_ssh(nos_host)):
-            func = self.cnos_ssh.create_and_trunk_vlan
-        else:
-            func = self.netconf.create_and_trunk_vlan
+        func = self._get_driver(nos_host).create_and_trunk_vlan
 
         return func(nos_host, vlan_id, vlan_name, intf_type, nos_port)
