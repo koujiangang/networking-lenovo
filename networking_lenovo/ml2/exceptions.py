@@ -87,3 +87,15 @@ class SubnetInterfacePresent(exceptions.NeutronException):
 class PortIdForNOSSvi(exceptions.NeutronException):
         """Port Id specified for NOS SVI."""
         message = _('NOS hardware router gateway only uses Subnet Ids.')
+
+class NOSRestHTTPError(exceptions.NeutronException):
+    """REST HTTP operation error"""
+    message = _("REST HTTP error %(http_code)d (%(http_reason)s)"
+                " when %(http_op)s %(url)s: %(http_response)s")
+
+class InvalidOSProtocol(exceptions.NeutronException):
+    """ 
+    Invalid (network operating system / protocol to access the switch)
+    combination specified in the configuration file for the driver
+    """
+    message = _("Cannot find driver for protocol %(protocol)s on %(os)s")

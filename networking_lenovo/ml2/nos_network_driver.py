@@ -63,8 +63,11 @@ class LenovoNOSDriver(object):
         protocol(SNMP, REST API, SSH) and operating system (ENOS, CNOS)
         """
 
+        default_protocol = self.PROTO_NETCONF
         os = self.nos_switches.get((host, 'os'), self.OS_ENOS).lower()
-        protocol = self.nos_switches.get((host, 'protocol'), self.PROTO_NETCONF).lower()
+        if os == self.OS_CNOS:
+            default_protocol = self.PROTO_REST
+        protocol = self.nos_switches.get((host, 'protocol'), default_protocol).lower()
 
         #Backward compatibility hack
         if protocol == 'cnos_ssh':
@@ -74,8 +77,7 @@ class LenovoNOSDriver(object):
         try:
             driver = self.drivers[(os, protocol)]
         except KeyError:
-            msg = "Cannot find driver for protocol %s on %s" % (protocol, os)
-            raise Exception(msg)
+            raise cexc.InvalidOSProtocol(protocol=protocol, os=os)
 
         return driver
         

@@ -32,9 +32,9 @@ class LenovoRestClient(object):
     """
     RESP_CODE_OK = 200
 
-    def __init__(self, ip, user, passwd):
+    def __init__(self, ip, user, passwd, tcp_port):
         self.ip = ip
-        self.tcp_port = 8090
+        self.tcp_port = tcp_port
         self.user = user
         self.passwd = passwd
         self.http_auth = requests.auth.HTTPBasicAuth(user, passwd)
@@ -55,11 +55,14 @@ class LenovoRestClient(object):
         url = self._build_url(self.login_obj)
         self.session = requests.Session()
 
-        max_tries = 3
-        while max_tries > 0:
+        for attempt in range(3):
             resp = self._get(url)
             if resp.status_code == self.RESP_CODE_OK:
-                break
+                return
+
+        error_str = "REST HTTP error: %d(%s)" % (resp.status_code, resp.reason)
+        raise Exception(error_str)
+
 
     def _log_http(self, resp):
         """ Writes to the logs the HTTP operation's details """
