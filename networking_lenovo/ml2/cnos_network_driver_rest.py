@@ -83,14 +83,14 @@ class LenovoCNOSDriverREST(object):
         return conn
 
 
-    def _check_process_resp(self, resp, proc_func=None):
+    def _check_process_resp(self, resp, expected_fields=None):
         """
         Check that a HTTP response was OK and in valid JSON format
-        If it was, calls proc_func() to process the response
+        If it was, check that the expected fields are present in JSON response
         Otherwise it raises a NOSRestHTTPError exception
 
         Returns: 
-             value return by proc_func() if this is not None
+             the JSON response
         """
 
         if resp.status_code != LenovoRestClient.RESP_CODE_OK:
@@ -98,12 +98,18 @@ class LenovoCNOSDriverREST(object):
                       http_reason=resp.reason, http_op=resp.request.method,
                       url=resp.url, http_response=resp.text)
 
-        if proc_func is None:
-            return None
-
         rj = resp.json()
-        ret_val = proc_func(rj)
-        return ret_val
+
+        if not expected_fields:
+            return rj
+
+        for field in expected_fields:
+            try:
+                val = rj[field]
+            except KeyError:
+                raise cexc.NOSJsonFieldNotFound(field=field, url=resp.url, json=rj)
+
+        return rj
             
 
     def _create_vlan(self, conn, vlan_id, vlan_name):
@@ -167,7 +173,7 @@ class LenovoCNOSDriverREST(object):
         obj = self.VLAN_IFACE_REST_OBJ + quote(interface, safe='')
 
         resp = conn.get(obj)
-        intf_info = self._check_process_resp(resp, lambda x: x)
+        intf_info = self._check_process_resp(resp, expected_fields=['vlans', 'pvid'])
 
         crt_vlist = intf_info['vlans']
         if vlan_id in crt_vlist:
@@ -195,7 +201,7 @@ class LenovoCNOSDriverREST(object):
         obj = self.VLAN_IFACE_REST_OBJ + quote(interface, safe='')
 
         resp = conn.get(obj)
-        intf_info = self._check_process_resp(resp, lambda x: x)
+        intf_info = self._check_process_resp(resp, expected_fields=['vlans', 'pvid'])
 
         crt_vlist = intf_info['vlans']
         if vlan_id not in crt_vlist:

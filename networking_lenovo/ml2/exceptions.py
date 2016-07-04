@@ -93,6 +93,11 @@ class NOSRestHTTPError(exceptions.NeutronException):
     message = _("REST HTTP error %(http_code)d (%(http_reason)s)"
                 " when %(http_op)s %(url)s: %(http_response)s")
 
+class NOSJsonFieldNotFound(exceptions.NeutronException):
+    """Expected JSON field not found in the REST response"""
+    message = _("Expected JSON field '%(field)s' not found"
+                " when accessing %(url)s; the JSON received: %(json)s")
+
 class InvalidOSProtocol(exceptions.NeutronException):
     """ 
     Invalid (network operating system / protocol to access the switch)
