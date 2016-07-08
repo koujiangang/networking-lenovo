@@ -48,9 +48,6 @@ class LenovoNOSDriver(object):
             (self.OS_ENOS, self.PROTO_NETCONF) : 
                   nos_network_driver_netconf.LenovoNOSDriverNetconf(),
 
-            (self.OS_CNOS, self.PROTO_SSH) : 
-                  cnos_network_driver_ssh.LenovoCNOSDriverSSH(),
-
             (self.OS_CNOS, self.PROTO_REST) : 
                   cnos_network_driver_rest.LenovoCNOSDriverREST(),
         }
