@@ -161,6 +161,24 @@ class LenovoCNOSDriverREST(object):
         return resp
 
 
+    def _get_vlist(self, vlist):
+        """
+        Internal method to obtain a vlan list from the JSON answer
+        from the switch
+        Parameters:
+            vlist - the list of vlans the port 
+                    or the special strings all or none
+        """
+        if vlist == "all":
+            return list(range(1, 4095))
+        elif vlist == "none":
+            return []
+        elif type(vlist) is not list:
+            raise Exception("Unexpected vlan list: " + str(vlist))
+        else:
+            return vlist
+
+
     def _add_intf_to_vlan(self, conn, vlan_id, interface):
         """
         Internal method to add an interface to a vlan
@@ -175,7 +193,7 @@ class LenovoCNOSDriverREST(object):
         resp = conn.get(obj)
         intf_info = self._check_process_resp(resp, expected_fields=['vlans', 'pvid'])
 
-        crt_vlist = intf_info['vlans']
+        crt_vlist = self._get_vlist(intf_info['vlans'])
         if vlan_id in crt_vlist:
             return
 
@@ -203,7 +221,7 @@ class LenovoCNOSDriverREST(object):
         resp = conn.get(obj)
         intf_info = self._check_process_resp(resp, expected_fields=['vlans', 'pvid'])
 
-        crt_vlist = intf_info['vlans']
+        crt_vlist = self._get_vlist(intf_info['vlans'])
         if vlan_id not in crt_vlist:
             return
 
