@@ -33,7 +33,6 @@ LOG = logging.getLogger(__name__)
 class LenovoNOSDriver(object):
     PROTO_SNMP = 'snmp'
     PROTO_NETCONF = 'netconf'
-    PROTO_SSH = 'ssh'
     PROTO_REST = 'rest'
     OS_ENOS = 'enos'
     OS_CNOS = 'cnos'
@@ -57,7 +56,7 @@ class LenovoNOSDriver(object):
         """ 
         Obtains the instance of the class that actually implements
         the functionality based of the configuration settings for
-        protocol(SNMP, REST API, SSH) and operating system (ENOS, CNOS)
+        protocol(SNMP, REST API, Netconf) and operating system (ENOS, CNOS)
         """
 
         default_protocol = self.PROTO_NETCONF
@@ -65,11 +64,6 @@ class LenovoNOSDriver(object):
         if os == self.OS_CNOS:
             default_protocol = self.PROTO_REST
         protocol = self.nos_switches.get((host, 'protocol'), default_protocol).lower()
-
-        #Backward compatibility hack
-        if protocol == 'cnos_ssh':
-            protocol = self.PROTO_SSH
-            os = self.OS_CNOS
 
         try:
             driver = self.drivers[(os, protocol)]
