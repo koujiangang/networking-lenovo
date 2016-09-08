@@ -79,14 +79,14 @@ snmp_priv={snmpPriv}
         """
             Description: Load Yaml data file and generate the Neutron configuration
         """
-        from yaml import load
+        from yaml import safe_load
         
         if not os.path.isfile(fileName):
             print('[ERROR]: Could not find the data file %s. Aborted.' % fileName)
         with open(fileName,'r') as f: # Open file for reading
             yamlSrc = f.read()
             try:
-                self.dictInput = load(yamlSrc)
+                self.dictInput = safe_load(yamlSrc)
                 return self.dictInput
             except Exception as e:
                 print('[ERROR]: Failed to process the Yaml data file. Reason: %s' % str(e))
