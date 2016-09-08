@@ -363,8 +363,8 @@ class LenovoNOSDriverSNMP(object):
         return var_binds
     
 
-    def _get_sys_descr(self, nos_host):
-        LOG.debug(_('_get_sys_descr %s'), nos_host)
+    def get_sys_descr(self, nos_host):
+        LOG.debug(_('get_sys_descr %s'), nos_host)
         varBinds = []
         varBinds += sysDescr,
         
@@ -379,7 +379,7 @@ class LenovoNOSDriverSNMP(object):
             return self.nos_oid_table[nos_host]
         else:
             LOG.debug(_("detect device type..."))
-            sys_descr = self._get_sys_descr(nos_host)
+            sys_descr = self.get_sys_descr(nos_host)
             if sys_descr.find(GRYPHONFC_SYSDESCR) != -1:
                 LOG.debug(_("this is a GryphonFC"))
                 self.nos_oid_table[nos_host] = gryphonfc_oid

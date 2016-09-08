@@ -63,16 +63,38 @@ class LenovoNOSDriver(object):
         protocol(SNMP, REST API, SSH) and operating system (ENOS, CNOS)
         """
 
-        default_protocol = self.PROTO_NETCONF
-        os = self.nos_switches.get((host, 'os'), self.OS_ENOS).lower()
-        if os == self.OS_CNOS:
-            default_protocol = self.PROTO_REST
-        protocol = self.nos_switches.get((host, 'protocol'), default_protocol).lower()
+	"""
+	special handling for thinkcloud, the logic is:
+	try to get sysDesc via snmp first, 
+	if it's a cnos, use REST, 
+	otherwise, use SNMP
+	"""
+	CNOS_TAG = "CNOS"
+	driver = self.drivers[(self.OS_ENOS, self.PROTO_SNMP)]
+	sysDesc = driver.get_sys_descr(host)
+	LOG.debug(_('%s'), sysDesc)
+	if sysDesc.find(CNOS_TAG) != -1:
+	    LOG.debug(_("this is a CNOS switch"))
+	    os = self.OS_CNOS
+            protocol = self.PROTO_REST
+        else:
+            os = self.OS_ENOS
+            protocol = self.PROTO_SNMP 
 
-        #Backward compatibility hack
-        if protocol == 'cnos_ssh':
-            protocol = self.PROTO_SSH
-            os = self.OS_CNOS
+
+	
+	
+
+        #default_protocol = self.PROTO_NETCONF
+        #os = self.nos_switches.get((host, 'os'), self.OS_ENOS).lower()
+        #if os == self.OS_CNOS:
+        #    default_protocol = self.PROTO_REST
+        #protocol = self.nos_switches.get((host, 'protocol'), default_protocol).lower()
+        #
+        ##Backward compatibility hack
+        #if protocol == 'cnos_ssh':
+        #    protocol = self.PROTO_SSH
+        #    os = self.OS_CNOS
 
         try:
             driver = self.drivers[(os, protocol)]
