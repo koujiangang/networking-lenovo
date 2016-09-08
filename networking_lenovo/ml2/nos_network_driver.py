@@ -25,7 +25,6 @@ from networking_lenovo.ml2 import nos_db_v2
 from networking_lenovo.ml2 import nos_snippets as snipp
 from networking_lenovo.ml2 import nos_network_driver_netconf
 from networking_lenovo.ml2 import nos_network_driver_snmp
-from networking_lenovo.ml2 import cnos_network_driver_ssh
 from networking_lenovo.ml2 import cnos_network_driver_rest
 
 LOG = logging.getLogger(__name__)
