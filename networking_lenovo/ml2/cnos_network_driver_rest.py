@@ -42,6 +42,8 @@ class LenovoCNOSDriverREST(object):
 
     REST_TCP_PORT_STR = "rest_tcp_port"
     REST_DEFAULT_PORT = 8090
+    REST_DEFAULT_PORT_HTTPS = 443
+    REST_USE_HTTPS_STR = "use_ssl"
 
     def __init__(self):
         self.switches = conf.ML2MechLenovoConfig.nos_dict
@@ -72,10 +74,19 @@ class LenovoCNOSDriverREST(object):
         """ Connect to the switch """
         user = self.switches[host, const.USERNAME]
         password = self.switches[host, const.PASSWORD]
-        tcp_port = self.switches.get((host, self.REST_TCP_PORT_STR),
-                                      self.REST_DEFAULT_PORT)
+        https_str = self.switches.get((host, self.REST_USE_HTTPS_STR),
+                                      "false").lower()
+        use_https = True
+        if https_str != "true":
+            use_https = False
 
-        conn = LenovoRestClient(host, user, password, tcp_port)
+        default_port = self.REST_DEFAULT_PORT
+        if use_https:
+            default_port = self.REST_DEFAULT_PORT_HTTPS
+        tcp_port = self.switches.get((host, self.REST_TCP_PORT_STR),
+                                     default_port)
+
+        conn = LenovoRestClient(host, user, password, tcp_port, use_https)
         try:
             conn.login()
         except Exception as e:

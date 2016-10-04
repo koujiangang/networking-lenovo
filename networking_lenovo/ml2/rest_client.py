@@ -32,11 +32,13 @@ class LenovoRestClient(object):
     """
     RESP_CODE_OK = 200
 
-    def __init__(self, ip, user, passwd, tcp_port):
+    def __init__(self, ip, user, passwd, tcp_port, use_https):
         self.ip = ip
         self.tcp_port = tcp_port
         self.user = user
         self.passwd = passwd
+        self.use_https = use_https
+        self.verify_certificate = False
         self.http_auth = requests.auth.HTTPBasicAuth(user, passwd)
         self.headers = {"Content-Type" : "application/json"}
         self.login_obj = "nos/api/login/"
@@ -47,7 +49,11 @@ class LenovoRestClient(object):
         Internal utility to build the URL for a request 
         obj - REST object
         """
-        url = "http://%s:%s/%s" % (self.ip, self.tcp_port, obj)
+        proto = "http"
+        if self.use_https:
+            proto = "https"
+
+        url = "%s://%s:%s/%s" % (proto, self.ip, self.tcp_port, obj)
         return url
     
     def login(self):
@@ -87,23 +93,27 @@ class LenovoRestClient(object):
 
     def _get(self, url):
         """ Internal method for the GET operation """
-        resp = self.session.get(url, headers=self.headers, auth=self.http_auth)
+        resp = self.session.get(url, headers=self.headers, auth=self.http_auth, 
+                                verify=self.verify_certificate)
         self._log_http(resp)
         return resp
 
     def _post(self, url, js_body):
         """ Internal method for the POST operation """
-        resp = self.session.post(url, json=js_body, headers=self.headers, auth=self.http_auth)
+        resp = self.session.post(url, json=js_body, headers=self.headers, 
+                                 auth=self.http_auth, verify=self.verify_certificate)
         self._log_http(resp)
         return resp
 
     def _del(self, url):
         """ Internal method for the DELETE operation """
-        self.session.delete(url, headers=self.headers, auth=self.http_auth)
+        self.session.delete(url, headers=self.headers, auth=self.http_auth, 
+                            verify=self.verify_certificate)
 
     def _put(self, url, js_body):
         """ Internal method for the PUT operation """
-        resp = self.session.put(url, json=js_body, headers=self.headers, auth=self.http_auth)
+        resp = self.session.put(url, json=js_body, headers=self.headers, 
+                                auth=self.http_auth, verify=self.verify_certificate)
         self._log_http(resp)
         return resp
 
