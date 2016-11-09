@@ -116,16 +116,19 @@ class LenovoNOSMechanismDriver(api.MechanismDriver):
             # switch_ip.  Otherwise, just trunk.
             all_bindings = nxos_db.get_nosvlan_binding(vlan_id, switch_ip)
             previous_bindings = [row for row in all_bindings
-                    if row.instance_id != device_id]
+                    if row.processed and (row.instance_id != device_id)]
             if previous_bindings or (switch_ip in vlan_already_created):
-                LOG.debug("NOS: trunk vlan %s"), vlan_name
+                LOG.debug("NOS: trunk vlan %s" % vlan_name)
                 self.driver.enable_vlan_on_trunk_int(switch_ip, vlan_id,
                                                      intf_type, nos_port)
             else:
                 vlan_already_created.append(switch_ip)
-                LOG.debug("NOS: create & trunk vlan %s"), vlan_name
+                LOG.debug("NOS: create & trunk vlan %s" % vlan_name)
                 self.driver.create_and_trunk_vlan(
                     switch_ip, vlan_id, vlan_name, intf_type, nos_port)
+
+            port_id = '%s:%s' % (intf_type, nos_port)
+            nxos_db.process_binding(port_id, vlan_id, switch_ip, device_id)
 
     def _delete_nxos_db(self, vlan_id, device_id, host_id):
         """Delete the nos database entry.

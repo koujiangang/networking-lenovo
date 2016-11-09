@@ -40,14 +40,15 @@ def get_nosvlan_binding(vlan_id, switch_ip):
     return _lookup_all_nos_bindings(vlan_id=vlan_id, switch_ip=switch_ip)
 
 
-def add_nosport_binding(port_id, vlan_id, switch_ip, instance_id):
+def add_nosport_binding(port_id, vlan_id, switch_ip, instance_id, processed=False):
     """Adds a nosport binding."""
     LOG.debug(_("add_nosport_binding() called"))
     session = db.get_session()
     binding = nos_models_v2.NOSPortBinding(port_id=port_id,
                                                vlan_id=vlan_id,
                                                switch_ip=switch_ip,
-                                               instance_id=instance_id)
+                                               instance_id=instance_id,
+                                               processed=processed)
     session.add(binding)
     session.flush()
     return binding
@@ -77,6 +78,26 @@ def update_nosport_binding(port_id, new_vlan_id):
     session = db.get_session()
     binding = _lookup_one_nos_binding(session=session, port_id=port_id)
     binding.vlan_id = new_vlan_id
+    session.merge(binding)
+    session.flush()
+    return binding
+
+def process_binding(port_id, vlan_id, switch_ip, instance_id):
+    """Mark a binding as processed (i.e. changes have been made to
+       the switch"""
+
+    dbg_str = "process_binding() VM %s vlan %s, switch %s interface %s"
+    dbg_str = dbg_str % (instance_id, vlan_id, switch_ip, port_id)
+    LOG.debug(dbg_str)
+
+    session = db.get_session()
+    binding = _lookup_one_nos_binding(session=session,
+                                      port_id=port_id,
+                                      vlan_id=vlan_id,
+                                      switch_ip=switch_ip,
+                                      instance_id=instance_id,
+                                      processed=False)
+    binding.processed = True
     session.merge(binding)
     session.flush()
     return binding

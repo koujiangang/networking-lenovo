@@ -29,11 +29,12 @@ class NOSPortBinding(model_base.BASEV2):
     vlan_id = sa.Column(sa.Integer, nullable=False)
     switch_ip = sa.Column(sa.String(255))
     instance_id = sa.Column(sa.String(255))
+    processed = sa.Column(sa.Boolean, nullable=False)
 
     def __repr__(self):
         """Just the binding, without the id key."""
-        return ("<NOSPortBinding(%s,%s,%s,%s)>" %
-                (self.port_id, self.vlan_id, self.switch_ip, self.instance_id))
+        return ("<NOSPortBinding(%s,%s,%s,%s,%s)>" %
+                (self.port_id, self.vlan_id, self.switch_ip, self.instance_id, self.processed))
 
     def __eq__(self, other):
         """Compare only the binding, without the id key."""
