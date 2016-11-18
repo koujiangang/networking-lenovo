@@ -75,7 +75,7 @@ class LenovoCNOSDriverREST(object):
         user = self.switches[host, const.USERNAME]
         password = self.switches[host, const.PASSWORD]
         https_str = self.switches.get((host, self.REST_USE_HTTPS_STR),
-                                      "false").lower()
+                                      "true").lower()
         use_https = True
         if https_str != "true":
             use_https = False
