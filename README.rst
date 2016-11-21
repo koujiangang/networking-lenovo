@@ -6,7 +6,7 @@ Lenovo Networking Plugin for Openstack Neutron
 This site contains the Lenovo vendor code for Openstack Neutron ML2 Driver
 
 * Free software: Apache license
-* Bugs: http://bugs.launchpad.net/lenovo
+* Bugs: http://bugs.launchpad.net/networking-lenovo
 
 Overview
 --------
