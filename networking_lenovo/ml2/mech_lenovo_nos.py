@@ -64,6 +64,9 @@ class LenovoNOSMechanismDriver(api.MechanismDriver):
 
     def _get_switch_info(self, host_id):
         host_connections = []
+        if not self._nos_switches:
+            return host_connections
+        
         for switch_ip, attr in self._nos_switches:
             if str(attr) == str(host_id):
                 for port_id in (
