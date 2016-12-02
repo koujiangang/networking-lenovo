@@ -75,10 +75,10 @@ class LenovoNOSMechanismDriver(api.MechanismDriver):
                         intf_type, port = 'port', port_id
                     host_connections.append((switch_ip, intf_type, port))
 
-        if host_connections:
-            return host_connections
-        else:
-            raise excep.NOSComputeHostNotConfigured(host=host_id)
+        if not host_connections:
+            LOG.warning("No switch entry found for host %s" % host_id)
+
+        return host_connections
 
     def _configure_nxos_db(self, vlan_id, device_id, host_id):
         """Create the nos database entry.
