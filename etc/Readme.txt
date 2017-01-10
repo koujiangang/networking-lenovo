@@ -57,8 +57,8 @@ optional arguments:
       SNMP_Community: private
       SNMP_Authkey: key1
       SNMP_Privkey: key2
-      SNMP_Auth: MD5
-      SNMP_Priv: DES
+      SNMP_Auth: SHA
+      SNMP_Priv: AES-128
   links:
     compute01:
       portType: single
@@ -92,17 +92,17 @@ snmp_version=3
 snmp_community=private
 
 # SNMP user
-snmp_user=adminmd5
+snmp_user=adminshaaes
 
 # SNMP Auth key and Priv key, if not exist, assume NO_AUTH and NO_PRIV
 snmp_authkey=key1
 snmp_privkey=key2
 
-# SNMP v3 auth options, default is MD5, options: MD5, SHA
-snmp_auth=MD5
+# SNMP v3 auth option: SHA-96.
+snmp_auth = SHA
 
-# SNMP v2 priv options, default is DES, options: DES, AES-128
-snmp_priv=DES
+# SNMP v2 priv option: AES-128.
+snmp_priv = AES-128
 
 CHANGE LOGS
 -----------
