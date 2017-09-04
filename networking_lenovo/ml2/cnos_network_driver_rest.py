@@ -158,9 +158,6 @@ class LenovoCNOSDriverREST(object):
         if (mode == 'access') and (len(vlan_list) > 1):
             raise Exception('An access port cannot be in multiple vlans')
 
-        if pvid not in vlan_list:
-            raise Exception('The pvid should be in the list of vlans')
-
         req_js = {}
         req_js['if_name'] = interface
         req_js['bridgeport_mode'] = mode
