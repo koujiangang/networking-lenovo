@@ -16,8 +16,7 @@
 
 import sqlalchemy as sa
 
-from neutron.db import model_base
-
+from neutron_lib.db import model_base
 
 class NOSPortBinding(model_base.BASEV2):
     """Represents a binding of VM's to nos ports."""

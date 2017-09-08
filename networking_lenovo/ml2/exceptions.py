@@ -15,8 +15,7 @@
 
 """Exceptions used by Lenovo NOS ML2 mechanism driver."""
 
-from neutron.common import exceptions
-
+from neutron_lib import exceptions
 
 class CredentialNotFound(exceptions.NeutronException):
     """Credential with this ID cannot be found."""
