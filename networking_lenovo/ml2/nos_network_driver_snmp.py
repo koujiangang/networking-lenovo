@@ -293,7 +293,7 @@ class LenovoNOSDriverSNMP(object):
             if (nos_host, 'snmp_authkey') in self.nos_switches:
                 nos_authkey = self.nos_switches[nos_host, 'snmp_authkey'] 
                 if (nos_host, 'snmp_auth') in self.nos_switches:
-                    nos_auth = USM_SHA_AUTH if self.nos_switches[nos_host, 'snmp_auth'] == SNMP_AUTH_MD5 else USM_MD5_AUTH
+                    nos_auth = USM_SHA_AUTH if self.nos_switches[nos_host, 'snmp_auth'] == SNMP_AUTH_SHA else USM_MD5_AUTH
                 else:
                     nos_auth = USM_MD5_AUTH
             else:
