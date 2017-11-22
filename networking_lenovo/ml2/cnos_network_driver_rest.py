@@ -127,17 +127,17 @@ class LenovoCNOSDriverREST(object):
 
     def _support_old_release(self, host):
         """
-        If plugin_release is not configured, assume the switch supports new release of ML2.
-        Otherwise, call different REST API according to plugin_release.
+        If plugin_mode is not configured, assume the switch supports new release of ML2.
+        Otherwise, call different REST API according to plugin_mode.
         :param host:
         :return:
         """
         try:
-            plugin_release = self.switches[host, const.PLUGIN_RELEASE]
+            plugin_mode = self.switches[host, const.PLUGIN_MODE]
         except KeyError:
             return False
 
-        if plugin_release == self.PLUGIN_FOR_OLD_RELEASE:
+        if plugin_mode == self.PLUGIN_FOR_OLD_RELEASE:
             return True
 
         return False

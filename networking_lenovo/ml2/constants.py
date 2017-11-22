@@ -23,4 +23,4 @@ PASSWORD = 'password'
 
 NETWORK_ADMIN = 'network_admin'
 
-PLUGIN_RELEASE = 'plugin_release'
+PLUGIN_MODE = 'plugin_mode'
