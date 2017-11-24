@@ -45,6 +45,9 @@ class LenovoCNOSDriverREST(object):
     REST_DEFAULT_PORT_HTTPS = 443
     REST_USE_HTTPS_STR = "use_ssl"
 
+    PLUGIN_FOR_OLD_RELEASE = "compatible"
+    REST_VLAN_OPERATION = {"add": "add", "remove": "remove", "except": "except"}
+
     def __init__(self):
         self.switches = conf.ML2MechLenovoConfig.nos_dict
 
@@ -121,7 +124,23 @@ class LenovoCNOSDriverREST(object):
                 raise cexc.NOSJsonFieldNotFound(field=field, url=resp.url, json=rj)
 
         return rj
-            
+
+    def _support_old_release(self, host):
+        """
+        If plugin_mode is not configured, assume the switch supports new release of ML2.
+        Otherwise, call different REST API according to plugin_mode.
+        :param host:
+        :return:
+        """
+        try:
+            plugin_mode = self.switches[host, const.PLUGIN_MODE]
+        except KeyError:
+            return False
+
+        if plugin_mode == self.PLUGIN_FOR_OLD_RELEASE:
+            return True
+
+        return False
 
     def _create_vlan(self, conn, vlan_id, vlan_name):
         """ 
@@ -186,8 +205,7 @@ class LenovoCNOSDriverREST(object):
         else:
             return vlist
 
-
-    def _add_intf_to_vlan(self, conn, vlan_id, interface):
+    def _add_intf_to_vlan(self, conn, vlan_id, interface, support_old_release=False):
         """
         Internal method to add an interface to a vlan
         Parameters:
@@ -211,11 +229,23 @@ class LenovoCNOSDriverREST(object):
         pvid = intf_info['pvid']
         mode = 'trunk'
 
+        if support_old_release:
+            pass
+        else:
+            crt_mode = intf_info['bridgeport_mode']
+            # If current mode is access mode, call with "{trunk, ["add", vlan_id]}" will configure the port as trunk all.
+            if crt_mode == "access":
+                new_vlist = [pvid, vlan_id]
+            else:
+                new_vlist = [self.REST_VLAN_OPERATION["add"]]
+                new_vlist.append(vlan_id)
+
         resp = self._conf_intf(conn, interface, mode, pvid, new_vlist)
         self._check_process_resp(resp)
 
 
-    def _rem_intf_from_vlan(self, conn, vlan_id, interface):
+
+    def _rem_intf_from_vlan(self, conn, vlan_id, interface, support_old_release=False):
         """
         Internal method to remove an interface from a vlan
         Parameters:
@@ -248,6 +278,13 @@ class LenovoCNOSDriverREST(object):
             mode = 'trunk'
         else:
             mode = 'access'
+
+        if not support_old_release:
+            if mode == 'access':
+                new_vlist = [pvid]
+            else:
+                new_vlist = [self.REST_VLAN_OPERATION["remove"]]
+                new_vlist.append(vlan_id)
 
         resp = self._conf_intf(conn, interface, mode, pvid, new_vlist)
         self._check_process_resp(resp)
@@ -293,7 +330,7 @@ class LenovoCNOSDriverREST(object):
         conn = self._connect(host)
         try:
             if_name = self._get_ifname(intf_type, interface)
-            self._add_intf_to_vlan(conn, vlan_id, if_name)
+            self._add_intf_to_vlan(conn, vlan_id, if_name, self._support_old_release(host))
         except Exception as e:
             raise cexc.NOSConfigFailed(config=dbg_str, exc=e)
         conn.close()
@@ -310,7 +347,7 @@ class LenovoCNOSDriverREST(object):
         conn = self._connect(host)
         try:
             if_name = self._get_ifname(intf_type, interface)
-            self._rem_intf_from_vlan(conn, vlan_id, if_name)
+            self._rem_intf_from_vlan(conn, vlan_id, if_name, self._support_old_release(host))
         except Exception as e:
             raise cexc.NOSConfigFailed(config=dbg_str, exc=e)
         conn.close()
@@ -327,7 +364,7 @@ class LenovoCNOSDriverREST(object):
         try:
             if_name = self._get_ifname(intf_type, interface)
             self._create_vlan(conn, vlan_id, vlan_name)
-            self._add_intf_to_vlan(conn, vlan_id, if_name)
+            self._add_intf_to_vlan(conn, vlan_id, if_name, self._support_old_release(host))
         except Exception as e:
             raise cexc.NOSConfigFailed(config=dbg_str, exc=e)
         conn.close()

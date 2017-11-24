@@ -282,6 +282,8 @@ mars_oid = {
 
 class LenovoNOSDriverSNMP(object):
     """NOS SNMP Driver Main Class."""
+    PLUGIN_FOR_OLD_RELEASE = "compatible"
+
     def __init__(self):
         self.nos_switches = conf.ML2MechLenovoConfig.nos_dict
         self.nos_oid_table = {}
@@ -461,6 +463,22 @@ class LenovoNOSDriverSNMP(object):
 
         self._set(nos_host, varBinds)
 
+    def _support_old_release(self, host):
+        """
+        If plugin_mode is not configured, assume the switch supports new release of ML2.
+        Otherwise, call different REST API according to plugin_mode.
+        :param host:
+        :return:
+        """
+        try:
+            plugin_mode = self.nos_switches[host, const.PLUGIN_MODE]
+        except KeyError:
+            return False
+
+        if plugin_mode == self.PLUGIN_FOR_OLD_RELEASE:
+            return True
+
+        return False
 
     #create VLAN
     def _create_vlan(self, nos_host, vlan_id, vlan_name):
@@ -564,7 +582,7 @@ class LenovoNOSDriverSNMP(object):
         self._set(nos_host, varBinds)
 
         """Remove all other VLAN except 1 for the first time config this port"""
-        max_vlan_id = 4094
+        max_vlan_id = 4094 if self._support_old_release(nos_host) else 4095
         vlans = range(2, max_vlan_id+1)
         varBinds = []
         for vid in vlans:

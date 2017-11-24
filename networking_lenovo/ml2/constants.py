@@ -22,3 +22,5 @@ USERNAME = 'username'
 PASSWORD = 'password'
 
 NETWORK_ADMIN = 'network_admin'
+
+PLUGIN_MODE = 'plugin_mode'
