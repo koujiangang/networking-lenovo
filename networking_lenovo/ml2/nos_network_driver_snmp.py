@@ -70,6 +70,7 @@ JUPITER_SYSDESCR = "G8296"
 PIGLET_SYSDESCR = "G8052"
 KRAKEN_SYSDESCR = "G8332"
 MARS_SYSDESCR = "G8272"
+TATOOINE_SYSDESCR = "NE2552E"
 
 gryphonfc_oid = {
     'device':                 "GryphonFC",
@@ -280,6 +281,19 @@ mars_oid = {
     'agApplyConfiguration':   (19046, 2, 7, 24, 1, 1, 1, 2, 0),
 }
 
+tatooine_oid = {
+    'device':                 "Tatooine",
+    'vlanNewCfgState':        (19046, 2, 18, 27, 2, 1, 1, 3, 1, 4),
+    'vlanNewCfgVlanName':     (19046, 2, 18, 27, 2, 1, 1, 3, 1, 2),
+    'vlanNewCfgDelete':       (19046, 2, 18, 27, 2, 1, 1, 3, 1, 7),
+    'vlanNewCfgAddPort':      (19046, 2, 18, 27, 2, 1, 1, 3, 1, 5),
+    'vlanNewCfgRemovePort':   (19046, 2, 18, 27, 2, 1, 1, 3, 1, 6),
+    'agPortNewCfgVlanTag':    (19046, 2, 18, 27, 1, 1, 2, 3, 1, 3),
+    'agPortNewCfgPVID':       (19046, 2, 18, 27, 1, 1, 2, 3, 1, 6),
+    'trunkGroupInfoPorts':    (19046, 2, 18, 27, 2, 3, 9, 1, 1, 3),
+    'agApplyConfiguration':   (19046, 2, 18, 27, 1, 1, 1, 2, 0),
+}
+
 class LenovoNOSDriverSNMP(object):
     """NOS SNMP Driver Main Class."""
     PLUGIN_FOR_OLD_RELEASE = "compatible"
@@ -446,6 +460,10 @@ class LenovoNOSDriverSNMP(object):
                 LOG.debug(_("this is a Mars"))
                 self.nos_oid_table[nos_host] = mars_oid
                 return mars_oid
+            elif sys_descr.find(TATOOINE_SYSDESCR) != -1:
+                LOG.debug(_("this is a Tatooine"))
+                self.nos_oid_table[nos_host] = tatooine_oid
+                return tatooine_oid
             else:
                 LOG.debug(_("unsupported device!"))
                 raise cexc.NOSSNMPFailure(operation='DEVICE', error='Unsupported Device!')
