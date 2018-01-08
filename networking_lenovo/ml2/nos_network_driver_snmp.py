@@ -600,7 +600,14 @@ class LenovoNOSDriverSNMP(object):
         self._set(nos_host, varBinds)
 
         """Remove all other VLAN except 1 for the first time config this port"""
-        max_vlan_id = 4094 if self._support_old_release(nos_host) else 4095
+        try:
+            switchHW = oid_table["device"]
+        except KeyError:
+            switchHW = ""
+        if switchHW == "Piglet":#vlan range always 1-4094 for piglet, different from other switches
+            max_vlan_id = 4094
+        else:
+            max_vlan_id = 4094 if self._support_old_release(nos_host) else 4095
         vlans = range(2, max_vlan_id+1)
         varBinds = []
         for vid in vlans:
