@@ -20,9 +20,9 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from neutron_lib import constants as n_const
-from neutron.extensions import portbindings
-from neutron.plugins.common import constants as p_const
-from neutron.plugins.ml2 import driver_api as api
+from neutron_lib.api.definitions import portbindings
+from neutron_lib import constants as p_const
+from neutron_lib.plugins.ml2 import api
 
 from networking_lenovo.ml2 import config as conf
 from networking_lenovo.ml2 import exceptions as excep

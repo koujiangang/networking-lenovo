@@ -42,7 +42,7 @@ def get_nosvlan_binding(vlan_id, switch_ip):
 def add_nosport_binding(port_id, vlan_id, switch_ip, instance_id, processed=False):
     """Adds a nosport binding."""
     LOG.debug(_("add_nosport_binding() called"))
-    session = db.get_session()
+    session = db.get_writer_session()
     binding = nos_models_v2.NOSPortBinding(port_id=port_id,
                                                vlan_id=vlan_id,
                                                switch_ip=switch_ip,
@@ -56,7 +56,7 @@ def add_nosport_binding(port_id, vlan_id, switch_ip, instance_id, processed=Fals
 def remove_nosport_binding(port_id, vlan_id, switch_ip, instance_id):
     """Removes a nosport binding."""
     LOG.debug(_("remove_nosport_binding() called"))
-    session = db.get_session()
+    session = db.get_writer_session()
     binding = _lookup_all_nos_bindings(session=session,
                                          vlan_id=vlan_id,
                                          switch_ip=switch_ip,
@@ -74,7 +74,7 @@ def update_nosport_binding(port_id, new_vlan_id):
         LOG.warning(_("update_nosport_binding called with no vlan"))
         return
     LOG.debug(_("update_nosport_binding called"))
-    session = db.get_session()
+    session = db.get_writer_session()
     binding = _lookup_one_nos_binding(session=session, port_id=port_id)
     binding.vlan_id = new_vlan_id
     session.merge(binding)
@@ -89,7 +89,7 @@ def process_binding(port_id, vlan_id, switch_ip, instance_id):
     dbg_str = dbg_str % (instance_id, vlan_id, switch_ip, port_id)
     LOG.debug(dbg_str)
 
-    session = db.get_session()
+    session = db.get_writer_session()
     binding = _lookup_one_nos_binding(session=session,
                                       port_id=port_id,
                                       vlan_id=vlan_id,
@@ -139,7 +139,7 @@ def _lookup_nos_bindings(query_type, session=None, **bfilter):
              raise NOSPortBindingNotFound.
     """
     if session is None:
-        session = db.get_session()
+        session = db.get_reader_session()
     query_method = getattr(session.query(
         nos_models_v2.NOSPortBinding).filter_by(**bfilter), query_type)
     try:
