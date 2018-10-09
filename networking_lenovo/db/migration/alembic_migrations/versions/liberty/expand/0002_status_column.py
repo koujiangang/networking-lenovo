@@ -35,3 +35,7 @@ def upgrade():
         'lenovo_ml2_nosport_bindings',
         sa.Column('processed', sa.Boolean(), nullable=False)
     )
+    op.add_column(
+        'lenovo_ml2_nosport_bindings',
+        sa.Column('vxlan_id', sa.Integer())
+    )

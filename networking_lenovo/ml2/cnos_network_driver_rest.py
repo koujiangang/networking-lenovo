@@ -39,6 +39,9 @@ class LenovoCNOSDriverREST(object):
 
     VLAN_REST_OBJ = "nos/api/cfg/vlan/"
     VLAN_IFACE_REST_OBJ = "nos/api/cfg/vlan_interface/"
+    CFG_INTERFACE_REST_OBJ = "nos/api/cfg/interface/"
+    CFG_NWV_VXLAN = "nos/api/cfg/nwv/vxlan/"
+    CFG_NWV_GLOBAL = "nos/api/cfg/nwv/"
 
     REST_TCP_PORT_STR = "rest_tcp_port"
     REST_DEFAULT_PORT = 8090
@@ -205,6 +208,98 @@ class LenovoCNOSDriverREST(object):
         else:
             return vlist
 
+    def _enable_vxlan_on_int(self, conn, interface):
+        obj = self.CFG_INTERFACE_REST_OBJ + quote(interface, safe='') + "/vxlan"
+        resp = conn.get(obj)
+        intf_vxlan_info = self._check_process_resp(resp, expected_fields=['vxlan'])
+        if intf_vxlan_info['vxlan'] == "enable":
+            return
+        req_js = {}
+        req_js.update({'vxlan':'enable'})
+        resp = conn.put(obj, req_js)
+        return resp
+
+    def _disable_vxlan_on_int(self, conn, interface):
+        obj = self.CFG_INTERFACE_REST_OBJ + quote(interface, safe='') + "/vxlan"
+        resp = conn.get(obj)
+        intf_vxlan_info = self._check_process_resp(resp, expected_fields=['vxlan'])
+        if intf_vxlan_info['vxlan'] == "disable":
+            return
+        req_js = {}
+        req_js.update({'vxlan': 'disable'})
+        resp = conn.put(obj, req_js)
+        return resp
+
+    def _config_nwv_vxlan(self, conn, tunnel_ip, vlan, vni, vtep_list):
+        obj = self.CFG_NWV_VXLAN
+        try:
+            if tunnel_ip in vtep_list:
+                vtep_list = vtep_list.remove(tunnel_ip)
+        except:
+            LOG.debug(_("Error: vtep_list is %s") % vtep_list)
+            return
+        req_js = {
+              "tunnel_ip_addr": tunnel_ip,
+              "vlan_bindings": [
+                "map",
+                [
+                  [
+                    vlan,
+                    vni
+                  ]
+                ]
+              ],
+              "remote_vtep": [
+                "map",
+                [
+                  [
+                    vni,
+                    vtep_list
+                  ]
+                ]
+              ]
+            }
+        resp = conn.put(obj, req_js)
+        return resp
+
+    #to update, use PUT method and "set"
+    def _deconfig_nwv_vxlan(self, conn, tunnel_ip, vlan, vni, vtep_list):
+        obj = self.CFG_NWV_VXLAN
+        req_js = {
+              "tunnel_ip_addr": tunnel_ip,
+              "vlan_bindings": [
+                "set",
+                [
+                  [
+                    vlan,
+                    vni
+                  ]
+                ]
+              ],
+              "remote_vtep": [
+                "set",
+                [
+                  [
+                    vni,
+                    vtep_list
+                  ]
+                ]
+              ]
+            }
+        resp = conn.put(obj, req_js)
+        return resp
+
+    def _config_nwv_global(self, conn):
+        obj = self.CFG_NWV_GLOBAL
+        resp = conn.get(obj)
+        nwv_info = self._check_process_resp(resp, expected_fields=['mode'])
+        if nwv_info['mode'] != "disabled":
+            return nwv_info
+        req_js = nwv_info
+        req_js.update({'mode': 'static'})
+        resp = conn.post(obj, req_js)
+        return resp
+
     def _add_intf_to_vlan(self, conn, vlan_id, interface, support_old_release=False):
         """
         Internal method to add an interface to a vlan
@@ -243,7 +338,6 @@ class LenovoCNOSDriverREST(object):
 
         resp = self._conf_intf(conn, interface, mode, pvid, new_vlist)
         self._check_process_resp(resp)
-
 
 
     def _rem_intf_from_vlan(self, conn, vlan_id, interface, support_old_release=False):
@@ -338,7 +432,72 @@ class LenovoCNOSDriverREST(object):
             raise cexc.NOSConfigFailed(config=dbg_str, exc=e)
         conn.close()
 
+    def enable_vxlan_on_int(self, host, intf_type, interface):
+        """Enable VXLAN on a interface."""
+        dbg_str = "VXLAN:enable vxlan on " + str(intf_type) + str(interface) + "of host:" + str(host)
+        LOG.debug(dbg_str)
+        conn = self._connect(host)
+        try:
+            if_name = self._get_ifname(intf_type, interface)
+            self._enable_vxlan_on_int(conn, if_name)
+        except Exception as e:
+            raise cexc.NOSConfigFailed(config=dbg_str, exc=e)
+        conn.close()
 
+    def disable_vxlan_on_int(self, host, intf_type, interface):
+        """Disable VXLAN on a interface."""
+
+        dbg_str = "VXLAN:disable vxlan on "+str(intf_type)+str(interface)+"of host:"+str(host)
+        LOG.debug(dbg_str)
+        conn = self._connect(host)
+        try:
+            if_name = self._get_ifname(intf_type, interface)
+            self._disable_vxlan_on_int(conn, if_name)
+        except Exception as e:
+            raise cexc.NOSConfigFailed(config=dbg_str, exc=e)
+        conn.close()
+
+    def config_nwv_vxlan(self, host, tunnel_ip, vlan, vni, vtep_list):
+        """Configure nwv vtep."""
+        vtep = ",".join(str(v) for v in vtep_list)
+        dbg_str = "VXLAN:configure nwv vxlan " + "tun ip:" + str(tunnel_ip) + "vlan:" + str(vlan) + "vni:" + str(
+            vni) + "vteps:" + vtep + "on host:" + str(host)
+        LOG.debug(dbg_str)
+        conn = self._connect(host)
+        try:
+            # if_name = self._get_ifname(intf_type, interface)
+            self._config_nwv_vxlan(conn, tunnel_ip, vlan, vni, vtep_list)
+        except Exception as e:
+            raise cexc.NOSConfigFailed(config=dbg_str, exc=e)
+        conn.close()
+
+    def deconfig_nwv_vxlan(self, host, tunnel_ip, vlan, vni, vtep_list):
+        """Remove nwv vtep."""
+        vtep = ",".join(str(v) for v in vtep_list)
+        dbg_str = "VXLAN:deconfigure nwv vxlan " + "tun ip:" + str(tunnel_ip) + "vlan:"+str(vlan)+ "vni:" + str(vni) + "vteps:" + vtep + "on host:"+str(host)
+        LOG.debug(dbg_str)
+        conn = self._connect(host)
+        try:
+            # if_name = self._get_ifname(intf_type, interface)
+            resp = self._deconfig_nwv_vxlan(conn, tunnel_ip, vlan, vni, vtep_list)
+            if resp.status_code != 200:
+                dbg_str = "VXLAN:response code "+str(resp.status_code)+" of deconfig_nwv_vxlan on host:" +str(host)+"json:"+str(resp.json)
+                LOG.debug(dbg_str)
+        except Exception as e:
+            raise cexc.NOSConfigFailed(config=dbg_str, exc=e)
+        conn.close()
+        return resp
+
+    def config_nwv_global(self, host):
+        """Configure nwv mode."""
+        conn = self._connect(host)
+        dbg_str = "VXLAN:configure nwv global on host:"+str(host)
+        try:
+            # if_name = self._get_ifname(intf_type, interface)
+            self._config_nwv_global(conn)
+        except Exception as e:
+            raise cexc.NOSConfigFailed(config=dbg_str, exc=e)
+        conn.close()
 
     def disable_vlan_on_trunk_int(self, host, vlan_id, intf_type, interface):
         """Disable a VLAN on a trunk interface."""

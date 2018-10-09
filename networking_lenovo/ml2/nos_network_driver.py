@@ -95,3 +95,28 @@ class LenovoNOSDriver(object):
         func = self._get_driver(nos_host).create_and_trunk_vlan
 
         return func(nos_host, vlan_id, vlan_name, intf_type, nos_port)
+
+    def enable_vxlan_on_int(self, nos_host, intf_type, interface):
+        func = self._get_driver(nos_host).enable_vxlan_on_int
+
+        return func(nos_host, intf_type, interface)
+
+    def disable_vxlan_on_int(self, nos_host, intf_type, interface):
+        func = self._get_driver(nos_host).disable_vxlan_on_int
+
+        return func(nos_host, intf_type, interface)
+
+    def config_nwv_vxlan(self, nos_host, tunnel_ip, vlan, vni, vtep_list):
+        func = self._get_driver(nos_host).config_nwv_vxlan
+
+        return func(nos_host, tunnel_ip, vlan, vni, vtep_list)
+
+    def deconfig_nwv_vxlan(self, nos_host, tunnel_ip, vlan, vni, vtep_list):
+        func = self._get_driver(nos_host).deconfig_nwv_vxlan
+
+        return func(nos_host, tunnel_ip, vlan, vni, vtep_list)
+
+    def config_nwv_global(self, nos_host):
+        func = self._get_driver(nos_host).config_nwv_global
+
+        return func(nos_host)

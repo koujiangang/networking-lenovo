@@ -1,0 +1,110 @@
+Lenovo ML2 for RedHat Platform Director 13
+Lenovo support Platform Director 13 in 2 ways:
+1.Deploy Platform Director 13 firstly and then install Plugin in container. This way whenever the setup has be deployed, customer will need to install Plugin again.
+2.Deploy container ML2 plugin and add switch configuration in container.
+Customer only modify configuration when the setup has been deployed.
+1.Steps to install Lenovo ML2 Plugin in a exist container
+To find the neutron server container, run “sudo docker ps |grep neutron”on controller node
+46f23416129f        192.168.24.1:8787/rhosp13/openstack-neutron-server:13.0-58              "kolla_start"            6 minutes ago       Up 6 minutes (healthy)                           neutron_api 
+Login to neutron-server container in controller node. Take above output for example:
+sudo docker exec -it -u root 46f23416129f bash
+2.Install plugin follow the installation steps for none-container Openstack. Refer the wiki here:
+https://wiki.openstack.org/wiki/Neutron/ML2/LenovoML2Mechanism
+NOTE: 
+A.You need to clone “vxlan” branch for Platform Director 13.
+B.If you container has no repo, please create it first.
+
+3.Steps to deploy with Lenovo ML2 container images
+3.1Enable epel repo if your container doesn’t have. Run below command in your undercloud node:
+# mkdir ml2-lenovo
+# cd ml2-lenovo
+# sudo yum install -y wget
+# wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+3.2Get Dockerfile and modify container tag to your real tag
+The docker file can be find here, modify the container tag:
+
+Save below dockerfile under directory of ml2-lenovo.
+cat >Dockerfile <<EOF
+FROM 192.168.24.1:8787/rhosp13/openstack-neutron-server:13.0-58
+USER root
+RUN yum install -y wget
+
+#add and install repo
+WORKDIR /tmp
+RUN wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+ADD epel-release-latest-7.noarch.rpm /usr/local/
+RUN rpm -ivh /usr/local/epel-release-latest-7.noarch.rpm
+
+RUN yum install -y python-pip
+RUN pip install ncclient==0.4.2
+RUN pip install pysnmp
+
+RUN yum install git -y
+RUN if [ -d "/tmp/networking-lenovo" ]; then rm -rf /tmp/networking-lenovo; fi
+RUN git clone https://github.com/lenovo-network/networking-lenovo.git /tmp/networking-lenovo
+WORKDIR /tmp/networking-lenovo
+RUN python setup.py install
+RUN sed 's/^ *mechanism_drivers *= */&lenovo,/g' -i /etc/neutron/plugins/ml2/ml2_conf.ini
+#RUN neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head
+#RUN service neutron-server restart
+USER neutron
+EOF
+Please modify the tag(green color) in your setup, you candisplay the tag by run: docker ps | grep neutron-server
+
+3.3Build container
+Build neutron server with Lenovo ML2:
+docker build --rm -t 192.168.24.1:8787/rhosp13/openstack-neutron-server:ml2-lenovo ~/ml2-lenovo
+
+At this point, you have 2 neutron-server containers:
+192.168.24.1:8787/rhosp13/openstack-neutron-server   13.0-58             96cb28335f24        2 hours ago         2.18 GB
+192.168.24.1:8787/rhosp13/openstack-neutron-server   ml2-lenovo          96cb28335f24        2 hours ago         2.18 GB
+
+Tag the original neutron-server(with tag 13.0-58) to backup
+docker tag 96cb28335f24 192.168.24.1:8787/rhosp13/openstack-neutron-server:backup
+
+Remove image of origin neutron-server:
+docker rmi 192.168.24.1:8787/rhosp13/openstack-neutron-server:13.0-58
+
+Change tag from ml2-lenovo to 13.0-58:
+docker tag 96cb28335f24 192.168.24.1:8787/rhosp13/openstack-neutron-server:13.0-58
+
+Push the image to your local docker registry:
+docker push 192.168.24.1:8787/rhosp13/openstack-neutron-server:13.0-58
+
+
+3.4Deploy overcloud
+N/A
+
+3.5Update neutron database and configure ML2.
+1.To update database, login to neutron-server container and run:
+#cd /usr/lib/python2.7/site-packages/networking_lenovo
+#neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file  /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head
+#sed 's/^ *mechanism_drivers *= */&lenovo,/g' -i /etc/neutron/plugins/ml2/ml2_conf.ini
+
+2.Please refer to wiki(https://wiki.openstack.org/wiki/Neutron/ML2/LenovoML2Mechanism)
+Example for ml2 configure:
+[ml2_type_lenovo_vxlan]
+vxlan_range_base = 50000
+[ml2_mech_lenovo:10.240.160.69]
+os = cnos
+protocol = rest
+rest_tcp_port = 443
+username = admin
+password = admin
+controller = port:1/34
+compute1 = port:1/34
+network_mode = vxlan
+virtuel_interface_ip = 10.10.1.2
+
+[ml2_mech_lenovo:10.240.160.39]
+os = cnos
+protocol = rest
+rest_tcp_port = 443
+username = admin
+password = admin
+compute1 = port:1/1
+network_mode = vxlan
+virtuel_interface_ip = 10.10.1.1
+
+Restart neutron-sever container.

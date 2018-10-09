@@ -45,7 +45,8 @@ cfg.CONF.register_opts(ml2_lenovo_opts, "ml2_lenovo")
 class ML2MechLenovoConfig(object):
     """ML2 Mechanism Driver Lenovo Configuration class."""
     nos_dict = {}
-
+    nos_common = {}
+    nos_vtep = {}
     def __init__(self):
         self._create_ml2_mech_device_lenovo_dictionary()
 
@@ -66,3 +67,8 @@ class ML2MechLenovoConfig(object):
                 if dev_id.lower() == 'ml2_mech_lenovo':
                     for dev_key, value in parsed_file[parsed_item].items():
                         self.nos_dict[dev_ip, dev_key] = value[0]
+                        if dev_key == "virtuel_interface_ip":
+                            self.nos_vtep[dev_ip, dev_key] = value[0]
+                elif parsed_item.lower() == 'ml2_type_lenovo_vxlan':
+                    for dev_key, value in parsed_file[parsed_item].items():
+                        self.nos_common[dev_key] = value[0]

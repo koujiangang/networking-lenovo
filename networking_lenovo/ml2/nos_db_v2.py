@@ -39,28 +39,30 @@ def get_nosvlan_binding(vlan_id, switch_ip):
     return _lookup_all_nos_bindings(vlan_id=vlan_id, switch_ip=switch_ip)
 
 
-def add_nosport_binding(port_id, vlan_id, switch_ip, instance_id, processed=False):
+def add_nosport_binding(port_id, vlan_id, switch_ip, instance_id, vxlan_id=0, processed=False):
     """Adds a nosport binding."""
     LOG.debug(_("add_nosport_binding() called"))
-    session = db.get_session()
+    session = db.get_writer_session()
     binding = nos_models_v2.NOSPortBinding(port_id=port_id,
                                                vlan_id=vlan_id,
                                                switch_ip=switch_ip,
                                                instance_id=instance_id,
+                                               vxlan_id=vxlan_id,
                                                processed=processed)
     session.add(binding)
     session.flush()
     return binding
 
 
-def remove_nosport_binding(port_id, vlan_id, switch_ip, instance_id):
+def remove_nosport_binding(port_id, vlan_id, switch_ip, instance_id, vxlan_id=0):
     """Removes a nosport binding."""
     LOG.debug(_("remove_nosport_binding() called"))
-    session = db.get_session()
+    session = db.get_writer_session()
     binding = _lookup_all_nos_bindings(session=session,
                                          vlan_id=vlan_id,
                                          switch_ip=switch_ip,
                                          port_id=port_id,
+                                         vxlan_id=vxlan_id,
                                          instance_id=instance_id)
     for bind in binding:
         session.delete(bind)
@@ -74,7 +76,7 @@ def update_nosport_binding(port_id, new_vlan_id):
         LOG.warning(_("update_nosport_binding called with no vlan"))
         return
     LOG.debug(_("update_nosport_binding called"))
-    session = db.get_session()
+    session = db.get_writer_session()
     binding = _lookup_one_nos_binding(session=session, port_id=port_id)
     binding.vlan_id = new_vlan_id
     session.merge(binding)
@@ -89,7 +91,7 @@ def process_binding(port_id, vlan_id, switch_ip, instance_id):
     dbg_str = dbg_str % (instance_id, vlan_id, switch_ip, port_id)
     LOG.debug(dbg_str)
 
-    session = db.get_session()
+    session = db.get_writer_session()
     binding = _lookup_one_nos_binding(session=session,
                                       port_id=port_id,
                                       vlan_id=vlan_id,
@@ -116,6 +118,18 @@ def get_port_vlan_switch_binding(port_id, vlan_id, switch_ip):
                                       switch_ip=switch_ip,
                                       vlan_id=vlan_id)
 
+def get_port_vxlan_switch_binding(port_id, vxlan_id, switch_ip):
+    """Lists nosvm bindings."""
+    LOG.debug(_("get_port_vxlan_switch_binding() called"))
+    return _lookup_all_nos_bindings(port_id=port_id,
+                                      switch_ip=switch_ip,
+                                    vxlan_id=vxlan_id)
+def get_vlan_vxlan_switch_binding(vlan_id, vxlan_id, switch_ip):
+    """Lists nosvm bindings."""
+    LOG.debug(_("get_port_vlan_switch_binding() called"))
+    return _lookup_all_nos_bindings(vlan_id=vlan_id,
+                                      switch_ip=switch_ip,
+                                    vxlan_id=vxlan_id)
 
 def get_port_switch_bindings(port_id, switch_ip):
     """List all vm/vlan bindings on a NOS switch port."""
@@ -139,7 +153,7 @@ def _lookup_nos_bindings(query_type, session=None, **bfilter):
              raise NOSPortBindingNotFound.
     """
     if session is None:
-        session = db.get_session()
+        session = db.get_reader_session()
     query_method = getattr(session.query(
         nos_models_v2.NOSPortBinding).filter_by(**bfilter), query_type)
     try:

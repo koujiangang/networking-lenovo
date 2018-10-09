@@ -26,3 +26,7 @@ PASSWORD = 'password'
 NETWORK_ADMIN = 'network_admin'
 
 PLUGIN_MODE = 'plugin_mode'
+
+NETWORK_MODE = 'network_mode'
+VXLAN = 'vxlan'
+VLAN = 'vlan'
